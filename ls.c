@@ -292,6 +292,9 @@ int timecmp(FileInfo *a, FileInfo *b) {
 int filecmp(FileInfo *a,FileInfo *b){
     char *p = a->fileName;
     char *q = b->fileName;
+    if(strcmp(a->fileName,"..") == 0 && strcmp(b->fileName , ".") == 0){
+        return 1;
+    }
     while(*p != '\0'||*q != '\0'){
         if(*p==*q){
             p++;
@@ -314,7 +317,7 @@ int filecmp(FileInfo *a,FileInfo *b){
         }
 
     }
-    return 1;    
+    return 0;    
 }
 
 void sort(FileInfo*buff,int count,struct optionflag optionflag){
