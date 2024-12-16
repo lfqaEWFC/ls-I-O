@@ -363,6 +363,9 @@ int listR(char *soft,int *count,struct optionflag optionflag){
     for(int k=0;k<counter;k++){
         if(buff[k].fileType == DIRECTORY){
             char sub_path[1024];
+        if( !strcmp(buff[k].fileName,".") || !strcmp(buff[k].fileName,"..")){
+            continue;
+        }
             snprintf(sub_path, sizeof(sub_path), "%s/%s", soft, buff[k].fileName);
             if(listR(sub_path, count, optionflag) == -1){
                 continue;
@@ -479,7 +482,8 @@ int main(int argc,char *argv[])
     12.9 计划完成输出模块；（已完成）
     12.9 完成后续递归思路和框架搭建；
     12.15 1.计划完成分类模块(12.15)；2.封装一个list函数方便后续递归；3.并改写函数支持输入多个目录；；
-    12.15-12.16 完成递归模块。
+    12.15-12.16 完成递归模块(完成了75%)。
+    12.16 1.解决a和R不兼容问题；2.sort函数在对.和..排序的时候的乱序问题
 
     关于递归：
     在main函数中创建一个函数;
