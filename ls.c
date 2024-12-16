@@ -23,7 +23,7 @@ struct optionflag{
 
 typedef enum {
     REGULAR_FILE,
-    DIRECTORY,
+    DIRECTORY,     
     SYMBOLIC_LINK,
     GREEN_EXECUTABLE,
     OTHER
@@ -98,6 +98,10 @@ FileInfo* getmessage (char *soft,int *count,struct optionflag optionflag){
     if(lstat(soft,&sb) == -1){
         perror("lstat");
         return NULL;        
+    }
+    if(access(soft,R_OK) == -1){
+        perror("无权限读取该目录");
+        return NULL;         
     }   
     if( getFileType(sb.st_mode) ==  DIRECTORY){
         DIR *dir = opendir(soft);
@@ -344,19 +348,25 @@ void sort(FileInfo*buff,int count,struct optionflag optionflag){
 
 }
 
-void listR(char *soft,int *count,struct optionflag optionflag){
+int listR(char *soft,int *count,struct optionflag optionflag){
     printf("%s:\n",soft);
     FileInfo *buff=getmessage(soft,count,optionflag);
+    if(buff == NULL){
+        return -1;
+    }
     sort(buff,*count,optionflag);
     struct winsize size = getTerminalSize();
     print(buff,*count,optionflag,size);
-    printf("\n");
     int counter = *count;
+    if(counter)
+        printf("\n");
     for(int k=0;k<counter;k++){
         if(buff[k].fileType == DIRECTORY){
             char sub_path[1024];
             snprintf(sub_path, sizeof(sub_path), "%s/%s", soft, buff[k].fileName);
-            listR(sub_path, count, optionflag);
+            if(listR(sub_path, count, optionflag) == -1){
+                continue;
+            }
         }
     }
 
