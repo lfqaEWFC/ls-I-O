@@ -53,7 +53,13 @@ FileType getFileType(mode_t mode) {
 }
 
 void getFilePermissions(mode_t mode, char* permissions) {
-    permissions[0] = (S_ISDIR(mode)) ? 'd' : '-';
+    permissions[0]='-';
+    if(S_ISDIR(mode)) permissions[0]='d';
+    if(S_ISCHR(mode)) permissions[0]='c';
+    if(S_ISBLK(mode)) permissions[0]='b';
+    if(S_ISLNK(mode)) permissions[0]='l';
+    if(S_ISFIFO(mode)) permissions[0]='f';
+    if(S_ISSOCK(mode)) permissions[0]='s';
     permissions[1] = (mode & S_IRUSR)? 'r' : '-';
     permissions[2] = (mode & S_IWUSR)? 'w' : '-';
     permissions[3] = (mode & S_IXUSR)? 'x' : '-';
@@ -94,7 +100,7 @@ FileInfo* getmessage (char *soft,int *count,struct optionflag optionflag){
     struct stat sb;
     char full_path[1024];
     int sz = strlen(soft);
-    FileInfo *buff = (FileInfo*)malloc(sizeof(FileInfo)*60000);
+    FileInfo *buff = (FileInfo*)malloc(sizeof(FileInfo)*20000);
     if(lstat(soft,&sb) == -1){
         perror("lstat");
         return NULL;        
@@ -184,6 +190,11 @@ void print(FileInfo* buff, int count,struct optionflag optionflag,struct winsize
     if(optionflag.options)
         width++;
     int number = size.ws_col/width;
+    if(number == 0){
+        printf("文件名过长，超出命令行范围！！！\n");
+        printf("\n");
+        return;
+    }
     if (optionflag.optionl){
         for(int j=0;j<count;j++){
             char maxlinkstr[20];
@@ -200,7 +211,7 @@ void print(FileInfo* buff, int count,struct optionflag optionflag,struct winsize
             }
         }    
     }
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {       
         if(i!=0 && i%number == 0 && !optionflag.optionl){
             printf("\n");
         }
@@ -352,6 +363,7 @@ void sort(FileInfo*buff,int count,struct optionflag optionflag){
 }
 
 int listR(char *soft,int *count,struct optionflag optionflag){
+    
     printf("%s:\n",soft);
     FileInfo *buff=getmessage(soft,count,optionflag);
     if(buff == NULL){
@@ -375,7 +387,9 @@ int listR(char *soft,int *count,struct optionflag optionflag){
             }
         }
     }
-
+    
+    free(buff);
+    
 }
 
 int main(int argc,char *argv[])
